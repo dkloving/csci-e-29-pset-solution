@@ -22,7 +22,7 @@ class SambanisSplitFolds(Task):
     seed = IntParameter(42)
 
     OUTPUT_PATH = os.path.abspath("output")
-    OUTPUT_SUBFOLDER = "folds"
+    OUTPUT_NAME = "sambanis"
     COLS = ["warstds", "ager", "agexp", "anoc", "army85", "autch98", "auto4",
         "autonomy", "avgnabo", "centpol3", "coldwar", "decade1", "decade2",
         "decade3", "decade4", "dem", "dem4", "demch98", "dlang", "drel",
@@ -42,7 +42,7 @@ class SambanisSplitFolds(Task):
         return SambanisData()
 
     def output(self):
-        return LocalTarget(os.path.join(self.OUTPUT_PATH, self.OUTPUT_SUBFOLDER))
+        return LocalTarget(os.path.join(self.OUTPUT_PATH, self.OUTPUT_NAME))
 
     def run(self):
         with self.input().open() as f:
@@ -51,10 +51,16 @@ class SambanisSplitFolds(Task):
         X = data.drop('warstds', axis=1).values
         y = data['warstds'].values
 
+        # save entire arrays
+        np.save(os.path.join(self.output().path, "X.npy"), X)
+        np.save(os.path.join(self.output().path, "y.npy"), y)
+
+        # split into folds
         cv = StratifiedKFold(n_splits=self.n_splits, shuffle=True, random_state=self.seed)
 
+        # save train and test file for each fold
         for i, (train, test) in enumerate(cv.split(X, y)):
-            k_folder = os.path.join(self.output().path, str(i))
+            k_folder = os.path.join(self.output().path, "folds", str(i))
             os.makedirs(k_folder, exist_ok=True)
             train_output_path = os.path.join(k_folder, "train.npy")
             test_output_path = os.path.join(k_folder, "test.npy")
