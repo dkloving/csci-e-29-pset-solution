@@ -1,139 +1,43 @@
 import os
-from luigi import Task, ExternalTask, LocalTarget, IntParameter
+from luigi import Task, LocalTarget, IntParameter, Parameter
 
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import StratifiedKFold
 
 
-class SambanisData(ExternalTask):
-    """Loads the original data via a hard-coded local path"""
-
-    DATA_PATH = os.path.abspath("data")
-    DATA_FILENAME = "SambnisImp.csv"
-
-    def output(self):
-        return LocalTarget(os.path.join(self.DATA_PATH, self.DATA_FILENAME))
-
-
-class SambanisSplitFolds(Task):
-    """This prepares the Sambanis dataset for use in k-fold cross-validation.
+class SplitFoldsBase(Task):
+    """Base class for preparing a dataset for use in k-fold cross-validation.
 
     It filters the features to be only those desired and then writes npz containing X and y arrays
     along with similar train / test arrays for each fold.
+
+    Parameters that must be overridden by child class:
+        OUTPUT_NAME (str): to be appended to output_path for saving data
+        Y_COL (str): name of the column of the dependent variable
+        FEATURE_COLS (List[str]): list of column names of independent variables
     """
 
     n_splits = IntParameter(10)
     seed = IntParameter(42)
+    output_path = Parameter("output")
 
-    OUTPUT_PATH = os.path.abspath("output")
-    OUTPUT_NAME = "sambanis"
-    COLS = [
-        "warstds",
-        "ager",
-        "agexp",
-        "anoc",
-        "army85",
-        "autch98",
-        "auto4",
-        "autonomy",
-        "avgnabo",
-        "centpol3",
-        "coldwar",
-        "decade1",
-        "decade2",
-        "decade3",
-        "decade4",
-        "dem",
-        "dem4",
-        "demch98",
-        "dlang",
-        "drel",
-        "durable",
-        "ef",
-        "ef2",
-        "ehet",
-        "elfo",
-        "elfo2",
-        "etdo4590",
-        "expgdp",
-        "exrec",
-        "fedpol3",
-        "fuelexp",
-        "gdpgrowth",
-        "geo1",
-        "geo2",
-        "geo34",
-        "geo57",
-        "geo69",
-        "geo8",
-        "illiteracy",
-        "incumb",
-        "infant",
-        "inst",
-        "inst3",
-        "life",
-        "lmtnest",
-        "ln_gdpen",
-        "lpopns",
-        "major",
-        "manuexp",
-        "milper",
-        "mirps0",
-        "mirps1",
-        "mirps2",
-        "mirps3",
-        "nat_war",
-        "ncontig",
-        "nmgdp",
-        "nmdp4_alt",
-        "numlang",
-        "nwstate",
-        "oil",
-        "p4mchg",
-        "parcomp",
-        "parreg",
-        "part",
-        "partfree",
-        "plural",
-        "plurrel",
-        "pol4",
-        "pol4m",
-        "pol4sq",
-        "polch98",
-        "polcomp",
-        "popdense",
-        "presi",
-        "pri",
-        "proxregc",
-        "ptime",
-        "reg",
-        "regd4_alt",
-        "relfrac",
-        "seceduc",
-        "second",
-        "semipol3",
-        "sip2",
-        "sxpnew",
-        "sxpsq",
-        "tnatwar",
-        "trade",
-        "warhist",
-        "xconst",
-    ]
+    OUTPUT_NAME = None  # set this on implementation
+    Y_COL = None  # set this on implementation
+    FEATURE_COLS = None  # set this on implementation
 
     def requires(self):
-        return SambanisData()
+        raise NotImplementedError
 
     def output(self):
-        return LocalTarget(os.path.join(self.OUTPUT_PATH, self.OUTPUT_NAME))
+        return LocalTarget(os.path.join(self.output_path, self.OUTPUT_NAME))
 
     def run(self):
         with self.input().open() as f:
-            data = pd.read_csv(f, usecols=self.COLS)
+            data = pd.read_csv(f, usecols=self.FEATURE_COLS + [self.Y_COL])
 
-        X = data.drop("warstds", axis=1).values
-        y = data["warstds"].values
+        X = data.drop(self.Y_COL, axis=1).values
+        y = data[self.Y_COL].values
 
         # save entire arrays
         os.makedirs(self.output().path, exist_ok=True)

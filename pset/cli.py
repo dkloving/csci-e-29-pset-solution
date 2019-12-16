@@ -1,5 +1,5 @@
 from luigi import build
-from .tasks.hyperparameter_tuning import SambanisRFTuning
+from .tasks.sambanis_pipeline import SambanisRFTuning
 
 
 def main():

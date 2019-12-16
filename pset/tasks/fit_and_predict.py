@@ -4,7 +4,7 @@ import numpy as np
 from joblib import dump
 
 
-class FitPredictOnFold(Task):
+class FitPredictOnFoldBase(Task):
     """Fits and predicts with a RandomForest model, saving the predicted probabilities on test data
 
     Input files must be npz format, containing `X` and `y` arrays.

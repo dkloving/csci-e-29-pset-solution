@@ -2,10 +2,8 @@ import os
 from luigi import Task, Parameter, LocalTarget
 from matplotlib import pyplot as plt
 
-from .cross_validation import SambanisCV
 
-
-class RFTuningBase(Task):
+class RandomForestTuningBase(Task):
     """Uses cross-validation to tune the `n_estimators` parameter of a random forest
 
     Outputs an image with AUC plotted as a function of `n_estimators`
@@ -49,8 +47,3 @@ class RFTuningBase(Task):
 
     def complete(self):
         return os.path.exists(os.path.join(self.output().path, "results.png"))
-
-
-class SambanisRFTuning(RFTuningBase):
-    CrossValidationTask = SambanisCV
-    NAME = "Sambanis Dataset"

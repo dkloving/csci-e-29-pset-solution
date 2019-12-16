@@ -3,8 +3,6 @@ from luigi import Task, IntParameter, Parameter, DictParameter, LocalTarget
 import numpy as np
 from sklearn.metrics import roc_auc_score
 
-from .random_forest import SambanisRandomForest
-
 
 class CrossValidateBase(Task):
     """docstring goes here
@@ -48,5 +46,3 @@ class CrossValidateBase(Task):
         return os.path.exists(os.path.join(self.output().path, "auc.txt"))
 
 
-class SambanisCV(CrossValidateBase):
-    ModelTask = SambanisRandomForest
