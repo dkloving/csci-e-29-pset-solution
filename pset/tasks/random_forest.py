@@ -2,6 +2,7 @@ import os
 from luigi import Task, IntParameter, Parameter, LocalTarget
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
+from joblib import dump
 
 
 class RandomForestEvalTask(Task):
@@ -26,6 +27,11 @@ class RandomForestEvalTask(Task):
         y_pred = clf.predict_proba(test_data['X'])[:, 1]
         os.makedirs(self.output().path, exist_ok=True)
         np.save(os.path.join(self.output().path, "predictions.npy"), y_pred)
+        dump(clf, os.path.join(self.output().path, "model.joblib"))
 
     def complete(self):
-        return os.path.exists(os.path.join(self.output().path, "predictions.npy"))
+        """This should mark the task as complete only if both predictions and the pickled model files exist.
+        """
+        preds_exists = os.path.exists(os.path.join(self.output().path, "predictions.npy"))
+        model_exists = os.path.exists(os.path.join(self.output().path, "model.joblib"))
+        return preds_exists and model_exists

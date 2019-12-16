@@ -73,9 +73,7 @@ class SambanisSplitFolds(Task):
             np.savez(test_output_path, X=X[test], y=y[test])
 
     def complete(self):
-        """This should mark the task as complete only if the expected number of files have been written
-        however, it seems that currently luigi is incapable of recognizing the task is incomplete even
-        if we always return "False".
+        """This should mark the task as complete only if the expected number of files have been written.
         """
         file_count = 0
         for root, dirs, files in os.walk(self.output().path):
