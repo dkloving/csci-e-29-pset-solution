@@ -9,6 +9,7 @@ verify_ssl = true
 shap = "*"
 luigi = "*"
 scikit-learn = "*"
+matplotlib = "*"
 
 [requires]
 python_version = "3.6"
