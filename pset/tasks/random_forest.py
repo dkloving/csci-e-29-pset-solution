@@ -17,7 +17,7 @@ class RandomForestCVTask(Task):
 
     output_path = Parameter()
     fold_id = IntParameter()
-    model_params = DictParameter({'n_estimators': 10})
+    model_params = DictParameter({"n_estimators": 10})
 
     def requires(self):
         raise NotImplementedError
@@ -32,26 +32,29 @@ class RandomForestCVTask(Task):
         test_data = np.load(os.path.join(root_dir, "test.npz"))
 
         # create, fit, and inference Random Forest classifier
-        clf = RandomForestClassifier(n_estimators=self.model_params['n_estimators'])
-        clf.fit(train_data['X'], train_data['y'])
-        y_pred = clf.predict_proba(test_data['X'])[:, 1]
+        clf = RandomForestClassifier(n_estimators=self.model_params["n_estimators"])
+        clf.fit(train_data["X"], train_data["y"])
+        y_pred = clf.predict_proba(test_data["X"])[:, 1]
 
         # save the predictions, ground truth (for reference), and trained model
         os.makedirs(self.output().path, exist_ok=True)
         np.save(os.path.join(self.output().path, "predictions.npy"), y_pred)
-        np.save(os.path.join(self.output().path, "ground_truth.npy"), test_data['y'])
+        np.save(os.path.join(self.output().path, "ground_truth.npy"), test_data["y"])
         dump(clf, os.path.join(self.output().path, "model.joblib"))
 
     def complete(self):
         """This should mark the task as complete only if both predictions and the pickled model files exist.
         """
-        preds_exists = os.path.exists(os.path.join(self.output().path, "predictions.npy"))
-        truth_exists = os.path.exists(os.path.join(self.output().path, "ground_truth.npy"))
+        preds_exists = os.path.exists(
+            os.path.join(self.output().path, "predictions.npy")
+        )
+        truth_exists = os.path.exists(
+            os.path.join(self.output().path, "ground_truth.npy")
+        )
         model_exists = os.path.exists(os.path.join(self.output().path, "model.joblib"))
         return preds_exists and truth_exists and model_exists
 
 
 class SambanisRandomForestCV(RandomForestCVTask):
-
     def requires(self):
         return SambanisSplitFolds()

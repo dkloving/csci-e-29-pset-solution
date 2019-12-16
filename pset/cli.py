@@ -3,5 +3,4 @@ from .tasks.hyperparameter_tuning import SambanisRFTuning
 
 
 def main():
-    build([SambanisRFTuning(output_path='temp')]
-          , local_scheduler=True)
+    build([SambanisRFTuning(output_path="temp")], local_scheduler=True)

@@ -9,6 +9,7 @@ from .random_forest import SambanisRandomForestCV
 class CrossValidateBase(Task):
     """docstring goes here
     """
+
     n_folds = IntParameter(10)
     output_path = Parameter()
     model_params = DictParameter()
@@ -23,7 +24,9 @@ class CrossValidateBase(Task):
         """
         for fold in range(self.n_folds):
             output_path = os.path.join(self.output().path, str(fold))
-            yield self.ModelTask(output_path=output_path, fold_id=fold, model_params=self.model_params)
+            yield self.ModelTask(
+                output_path=output_path, fold_id=fold, model_params=self.model_params
+            )
 
     def run(self):
         """Accumulates all predictions and ground truths to calculate an ROC/AUC metric
@@ -36,13 +39,14 @@ class CrossValidateBase(Task):
             predictions = np.concatenate((predictions, fold_predictions))
             ground_truth = np.concatenate((ground_truth, fold_truth))
         score = roc_auc_score(ground_truth, predictions)
-        with open(os.path.join(self.output().path, "auc.txt"), 'w') as f:
+        with open(os.path.join(self.output().path, "auc.txt"), "w") as f:
             f.write(str(score))
 
     def complete(self):
         """This should mark the task as complete only if the auc file has been written.
         """
         return os.path.exists(os.path.join(self.output().path, "auc.txt"))
+
 
 class SambanisCV(CrossValidateBase):
     ModelTask = SambanisRandomForestCV
