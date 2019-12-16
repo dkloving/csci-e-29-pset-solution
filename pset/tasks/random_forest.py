@@ -26,12 +26,17 @@ class RandomForestCVTask(Task):
         return LocalTarget(self.output_path)
 
     def run(self):
+        # locate the folder containing data for this fold and read that data
         root_dir = os.path.join(self.input().path, "folds", str(self.fold_id))
         train_data = np.load(os.path.join(root_dir, "train.npz"))
         test_data = np.load(os.path.join(root_dir, "test.npz"))
+
+        # create, fit, and inference Random Forest classifier
         clf = RandomForestClassifier(n_estimators=self.model_params['n_estimators'])
         clf.fit(train_data['X'], train_data['y'])
         y_pred = clf.predict_proba(test_data['X'])[:, 1]
+
+        # save the predictions, ground truth (for reference), and trained model
         os.makedirs(self.output().path, exist_ok=True)
         np.save(os.path.join(self.output().path, "predictions.npy"), y_pred)
         np.save(os.path.join(self.output().path, "ground_truth.npy"), test_data['y'])

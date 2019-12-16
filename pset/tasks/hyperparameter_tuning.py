@@ -19,6 +19,8 @@ class RFTuningBase(Task):
     NAME = 'BaseTask'  # override this for specific datasets
 
     def requires(self):
+        """Kicks off cross-validation for each value of n_estimators
+        """
         for n_estimators in self.n_estimator_values:
             output_path = os.path.join(self.output().path, f"{n_estimators}_estimators")
             yield self.CrossValidationTask(output_path=output_path, model_params={'n_estimators': n_estimators})
@@ -27,6 +29,8 @@ class RFTuningBase(Task):
         return LocalTarget(self.output_path)
 
     def run(self):
+        """Collects all of the AUCs calculated during cross validation and plots them
+        """
         aucs = []
         for folder in self.input():
             with open(os.path.join(folder.path, 'auc.txt')) as f:
