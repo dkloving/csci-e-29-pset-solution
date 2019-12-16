@@ -3,7 +3,7 @@ from luigi import Task, IntParameter, Parameter, DictParameter, LocalTarget
 import numpy as np
 from sklearn.metrics import roc_auc_score
 
-from .random_forest import SambanisRandomForestCV
+from .random_forest import SambanisRandomForest
 
 
 class CrossValidateBase(Task):
@@ -49,4 +49,4 @@ class CrossValidateBase(Task):
 
 
 class SambanisCV(CrossValidateBase):
-    ModelTask = SambanisRandomForestCV
+    ModelTask = SambanisRandomForest
