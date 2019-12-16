@@ -36,6 +36,9 @@ class SplitFoldsBase(Task):
         with self.input().open() as f:
             data = pd.read_csv(f, usecols=self.FEATURE_COLS + [self.Y_COL])
 
+        # drop NA
+        data = data.dropna()
+
         X = data.drop(self.Y_COL, axis=1).values
         y = data[self.Y_COL].values
 
