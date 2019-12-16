@@ -1,5 +1,5 @@
 import os
-from luigi import Task, IntParameter, Parameter, LocalTarget
+from luigi import Task, IntParameter, Parameter, DictParameter, LocalTarget
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from joblib import dump
@@ -17,7 +17,7 @@ class RandomForestCVTask(Task):
 
     output_path = Parameter()
     fold_id = IntParameter()
-    n_estimators = IntParameter(1)
+    model_params = DictParameter({'n_estimators': 10})
 
     def requires(self):
         raise NotImplementedError
@@ -29,7 +29,7 @@ class RandomForestCVTask(Task):
         root_dir = os.path.join(self.input().path, "folds", str(self.fold_id))
         train_data = np.load(os.path.join(root_dir, "train.npz"))
         test_data = np.load(os.path.join(root_dir, "test.npz"))
-        clf = RandomForestClassifier(n_estimators=self.n_estimators)
+        clf = RandomForestClassifier(n_estimators=self.model_params['n_estimators'])
         clf.fit(train_data['X'], train_data['y'])
         y_pred = clf.predict_proba(test_data['X'])[:, 1]
         os.makedirs(self.output().path, exist_ok=True)
