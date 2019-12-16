@@ -17,6 +17,11 @@ class SambanisData(ExternalTask):
 
 
 class SambanisSplitFolds(Task):
+    """This prepares the Sambanis dataset for use in k-fold cross-validation.
+
+    It filters the features to be only those desired and then writes npz containing X and y arrays
+    along with similar train / test arrays for each fold.
+    """
 
     n_splits = IntParameter(10)
     seed = IntParameter(42)
@@ -52,8 +57,8 @@ class SambanisSplitFolds(Task):
         y = data['warstds'].values
 
         # save entire arrays
-        np.save(os.path.join(self.output().path, "X.npy"), X)
-        np.save(os.path.join(self.output().path, "y.npy"), y)
+        os.makedirs(self.output().path, exist_ok=True)
+        np.savez(os.path.join(self.output().path, "data.npz"), X=X, y=y)
 
         # split into folds
         cv = StratifiedKFold(n_splits=self.n_splits, shuffle=True, random_state=self.seed)
@@ -62,12 +67,18 @@ class SambanisSplitFolds(Task):
         for i, (train, test) in enumerate(cv.split(X, y)):
             k_folder = os.path.join(self.output().path, "folds", str(i))
             os.makedirs(k_folder, exist_ok=True)
-            train_output_path = os.path.join(k_folder, "train.npy")
-            test_output_path = os.path.join(k_folder, "test.npy")
-            np.save(train_output_path, train)
-            np.save(test_output_path, test)
+            train_output_path = os.path.join(k_folder, "train.npz")
+            test_output_path = os.path.join(k_folder, "test.npz")
+            np.savez(train_output_path, X=X[train], y=y[train])
+            np.savez(test_output_path, X=X[test], y=y[test])
 
     def complete(self):
-        path, dirs, files = next(os.walk("/usr/lib"))
-        file_count = len(files)
-        return file_count == self.n_splits * 2
+        """This should mark the task as complete only if the expected number of files have been written
+        however, it seems that currently luigi is incapable of recognizing the task is incomplete even
+        if we always return "False".
+        """
+        file_count = 0
+        for root, dirs, files in os.walk(self.output().path):
+            file_count += len(files)
+        num_files_as_expected = (file_count == self.n_splits * 2 + 1)
+        return num_files_as_expected
