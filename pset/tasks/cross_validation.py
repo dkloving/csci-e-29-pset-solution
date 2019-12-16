@@ -40,14 +40,9 @@ class CrossValidateBase(Task):
             f.write(str(score))
 
     def complete(self):
-        """This should mark the task as complete only if the expected number of files have been written.
+        """This should mark the task as complete only if the auc file has been written.
         """
-        file_count = 0
-        for root, dirs, files in os.walk(self.output().path):
-            file_count += len(files)
-        num_files_as_expected = (file_count == self.n_folds)
-        return num_files_as_expected
-
+        return os.path.exists(os.path.join(self.output().path, "auc.txt"))
 
 class SambanisCV(CrossValidateBase):
     ModelTask = SambanisRandomForestCV
