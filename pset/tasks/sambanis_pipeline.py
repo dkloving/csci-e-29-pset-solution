@@ -1,5 +1,5 @@
 import os
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from luigi import ExternalTask, LocalTarget
 
 from .fold_data import SplitFoldsBase
@@ -122,7 +122,6 @@ class SambanisSplitFolds(SplitFoldsBase):
 
 class SambanisRandomForest(FitPredictOnFoldBase):
     """Random Forest classifier for Sambanis data"""
-
     CLASSIFIER = RandomForestClassifier
 
     def requires(self):
@@ -130,9 +129,30 @@ class SambanisRandomForest(FitPredictOnFoldBase):
 
 
 class SambanisRFCV(CrossValidateBase):
+    """Manages cross-validation for the SambanisRandomForest classifier"""
     ModelTask = SambanisRandomForest
 
 
 class SambanisRFTuning(RandomForestTuningBase):
+    """Uses SambanisRFCV to perform cross-validation while tuning the `n_estimators` parameter"""
     CrossValidationTask = SambanisRFCV
     NAME = "Sambanis Dataset"
+    n_estimator_values = range(5, 105, 5)
+
+
+class SambanisAdaboost(SambanisRandomForest):
+    """Adaboost classifier for Sambanis data"""
+    CLASSIFIER = AdaBoostClassifier
+
+
+class SambanisAdaboostCV(CrossValidateBase):
+    """Cross-validation for the Adaboost classifier"""
+    ModelTask = SambanisAdaboost
+
+
+class SambanisAdaboostTuning(SambanisRFTuning):
+    """Uses the random forest tuner because it conveniently uses the same hyperparameter that
+    we are interested in here: `n_estimators`
+    """
+    CrossValidationTask = SambanisAdaboostCV
+    n_estimator_values = range(1, 51, 1)
