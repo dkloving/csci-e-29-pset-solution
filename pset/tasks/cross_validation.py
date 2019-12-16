@@ -44,5 +44,3 @@ class CrossValidateBase(Task):
         """This should mark the task as complete only if the auc file has been written.
         """
         return os.path.exists(os.path.join(self.output().path, "auc.txt"))
-
-
