@@ -3,7 +3,7 @@ from unittest import TestCase
 from tempfile import TemporaryDirectory
 from luigi import build
 
-from pset.tasks.sambanis_pipeline import SambanisRFCV, SambanisRandomForest
+from pset.tasks.sambanis_pipeline import SambanisRFCV
 
 
 class TestSambanisRF(TestCase):
