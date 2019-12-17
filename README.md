@@ -18,6 +18,8 @@ these tasks to run in Docker images for easy batching to a cloud compute service
 To actually process my data, I was able to rely on the classes described above to create pipelines for two specific datasets. The work required to add specific datasets or specific ML
 models was very modest, and can be found in `sambanis_pipeline.py` and `fearonlaitin_pipeline.py`. Adding new models is fairly easy an straightforward, but adding a new dataset takes only minutes.
 
+My solutions to the problems below are indexed by github releases. Version 0.1.0 solves problem 1, v0.2.0 solves problem 2, and v0.3.0 solves problem 3. Later releases are to add testing and this readme. 
+
 # PSet Description
 The purpose of this pset is to help you bridge the gap between jupyter notebooks ("the old way") and reusable, extendable data processing pipelines ("the new way").
 You have been provided with a notebook much like what you may find in the wild, including in your own previous data science work. Your goal is to first replicate the analysis
